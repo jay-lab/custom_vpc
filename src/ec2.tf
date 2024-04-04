@@ -30,8 +30,8 @@ data "aws_ami" "amzlinux2023" {
 }
 
 resource "aws_security_group" "web" {
-  name_prefix   = "allow-http-"
-  vpc_id = aws_vpc.main.id
+  name_prefix = "${var.instance_security_group_name}-"
+  vpc_id      = aws_vpc.main.id
   description = "Allow HTTP inbound traffic"
 
   ingress {
@@ -44,9 +44,9 @@ resource "aws_security_group" "web" {
 
   ingress {
     description = "SSH from VPC"
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -60,4 +60,16 @@ resource "aws_security_group" "web" {
   tags = {
     Name = "allow_http_ssh_instance"
   }
+}
+
+resource "aws_instance" "web_pub" {
+  ami                    = data.aws_ami.amzlinux2023.id
+  instance_type          = var.instance_type
+  vpc_security_group_ids = [aws_security_group.web.id]
+  subnet_id              = aws_subnet.pub_c.id
+  key_name               = aws_key_pair.mykey.key_name
+
+  user_data = templatefile("userdata.tftpl", {
+    port_number = var.server_port
+  })
 }
