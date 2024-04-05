@@ -21,24 +21,28 @@ resource "aws_internet_gateway" "gw" {
   }
 }
 
+#########################################################################################################
+# 퍼블릭 리소스
+#########################################################################################################
 # 퍼블릭 서브넷 a
 resource "aws_subnet" "pub_a" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.0.0/24"
   availability_zone       = "ap-northeast-2a"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = true # 서브넷에 생성되는 인스턴스가 자동적으로 퍼블릭 IPv4 주소를 할당받을수 있도록 하는 옵션
   tags = {
     Name = "tf-subnet-public1-ap-northeast-2a"
   }
 }
+
 # 퍼블릭 서브넷 c
 resource "aws_subnet" "pub_c" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "ap-northeast-2c"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = true # 서브넷에 생성되는 인스턴스가 자동적으로 퍼블릭 IPv4 주소를 할당받을수 있도록 하는 옵션
   tags = {
-    Name = "tf-subnet-public1-ap-northeast-2c"
+    Name = "tf-subnet-public2-ap-northeast-2c"
   }
 }
 
@@ -61,12 +65,90 @@ resource "aws_route_table" "pub" {
   }
 }
 
-# 라우팅 테이블 <-> 서브넷 연결 구성
+# 퍼블릭 라우팅 테이블 <-> 퍼블릭 서브넷 연결 구성
 resource "aws_route_table_association" "pub_a" {
   subnet_id      = aws_subnet.pub_a.id
   route_table_id = aws_route_table.pub.id
 }
+
 resource "aws_route_table_association" "pub_c" {
   subnet_id      = aws_subnet.pub_c.id
   route_table_id = aws_route_table.pub.id
+}
+
+#########################################################################################################
+# 프라이빗 리소스
+#########################################################################################################
+# 프라이빗 서브넷 a
+resource "aws_subnet" "pri_a" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "ap-northeast-2a"
+  #  map_public_ip_on_launch = true # 서브넷에 생성되는 인스턴스가 자동적으로 퍼블릭 IPv4 주소를 할당받을수 있도록 하는 옵션
+  tags = {
+    Name = "tf-subnet-private1-ap-northeast-2a"
+  }
+}
+
+# 프라이빗 서브넷 c
+resource "aws_subnet" "pri_c" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "ap-northeast-2c"
+  #  map_public_ip_on_launch = true # 서브넷에 생성되는 인스턴스가 자동적으로 퍼블릭 IPv4 주소를 할당받을수 있도록 하는 옵션
+  tags = {
+    Name = "tf-subnet-private2-ap-northeast-2c"
+  }
+}
+# 프랴이빗 라우팅 테이블 a
+resource "aws_route_table" "pri_a" {
+  vpc_id = aws_vpc.main.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.gw_a.id
+  }
+  tags = {
+    Name = "tf-rtb-private1-ap-northeast-2a"
+  }
+}
+
+# 프랴이빗 라우팅 테이블 c
+resource "aws_route_table" "pri_c" {
+  vpc_id = aws_vpc.main.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.gw_a.id
+  }
+  tags = {
+    Name = "tf-rtb-private2-ap-northeast-2c"
+  }
+}
+
+# 프랴이빗 라우팅 테이블a <-> 프랴이빗 서브넷a 연결 구성
+resource "aws_route_table_association" "pri_a" {
+  subnet_id      = aws_subnet.pri_a.id
+  route_table_id = aws_route_table.pri_a.id
+}
+
+# 프랴이빗 라우팅 테이블c <-> 프랴이빗 서브넷c 연결 구성
+resource "aws_route_table_association" "pri_c" {
+  subnet_id      = aws_subnet.pri_c.id
+  route_table_id = aws_route_table.pri_c.id
+}
+
+resource "aws_eip" "pub_a" {
+  domain = "vpc"
+
+  tags = {
+    Name = "tf-eip-ap-northeast-2a"
+  }
+}
+
+resource "aws_nat_gateway" "gw_a" {
+  allocation_id = aws_eip.pub_a.id
+  subnet_id = aws_subnet.pub_a.id
+  tags = {
+    Name: "tf-nat-public1-ap-northeast-2a"
+  }
+  depends_on = [aws_internet_gateway.gw] # 적절한 순서를 보장하려면 VPC에 대한 인터넷 게이트웨이에 명시적 종속성을 추가하는 것이 권장됨
 }
