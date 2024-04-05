@@ -84,3 +84,39 @@ echo '<html><h1>Hello My Private Subnet Linux Web Server!</h1></html>' | sudo te
 
 printf "<h2>Instance-id: %s<br>Az: %s</h2>" $ID $AZ | sudo tee -a /var/www/html/index.html
 ```
+
+### Amazon Linux 2023에서 MySQL 설치 및 DB 연결
+```mysql
+# install
+sudo dnf install mariadb105
+
+# check
+mysql --version
+
+# connect 
+# (ex. user: master, password: tf-password, endpoint: tf-db.cso8wtmrwb6r.ap-northeast-2.rds.amazonaws.com)
+mysql -umaster -ptf-password -htf-db.cso8wtmrwb6r.ap-northeast-2.rds.amazonaws.com
+
+# Using MySQL
+MySQL [(none)]> show databases;
+>
++--------------------+
+| Database           | 
++--------------------+
+| information_schema |
+| innodb             |
+| mysql              |
+| performance_schema |
+| sys                |
+| tf                 |
++--------------------+
+
+MySQL [(none)]> use tf
+> Database changed
+    
+MySQL [tf]> show tables;
+> Empty set (0.00 sec)
+
+MySQL [tf]> quit
+> Bye
+```

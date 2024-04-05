@@ -7,3 +7,8 @@ output "private_instance_ip" {
   description = "The private IP address of the private web server"
   value       = aws_instance.web_pri.private_ip
 }
+
+output "db_endpoint" {
+  description = "RDS instance endpoint"
+  value       = aws_db_instance.tf-db.endpoint
+}

@@ -21,3 +21,9 @@ variable "instance_security_group_name" {
   type        = string
   default     = "allow_http_ssh_instance"
 }
+
+variable "db_security_group_name" {
+  description = "The name of the security group for RDB"
+  type        = string
+  default     = "allow_mysql_db"
+}
