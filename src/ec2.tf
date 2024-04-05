@@ -64,15 +64,20 @@ resource "aws_security_group" "web" {
 
 # 퍼블릭 웹 서버
 resource "aws_instance" "web_pub" {
-  ami                    = data.aws_ami.amzlinux2023.id
-  instance_type          = var.instance_type
-  vpc_security_group_ids = [aws_security_group.web.id]
-  subnet_id              = aws_subnet.pub_c.id
-  key_name               = aws_key_pair.mykey.key_name
+  ami                         = data.aws_ami.amzlinux2023.id
+  instance_type               = var.instance_type
+  vpc_security_group_ids      = [aws_security_group.web.id]
+  user_data_replace_on_change = true
+  subnet_id                   = aws_subnet.pub_c.id
+  key_name                    = aws_key_pair.mykey.key_name
 
   user_data = templatefile("userdata.tftpl", {
     port_number = var.server_port
   })
+
+  tags = {
+    Name = "tf-web-pub"
+  }
 }
 # 프라이빗 서버
 resource "aws_instance" "web_pri" {
@@ -83,7 +88,13 @@ resource "aws_instance" "web_pri" {
   subnet_id                   = aws_subnet.pri_c.id
   key_name                    = aws_key_pair.mykey.key_name
 
+  user_data = templatefile("userdata.tftpl", {
+    port_number = var.server_port
+  })
+
   tags = {
     Name = "tf-web-pri"
   }
+
+  depends_on = [aws_nat_gateway.gw_a]
 }

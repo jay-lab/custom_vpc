@@ -65,7 +65,7 @@ data "aws_ami" "amzlinux2" {
 
 ```
 
-### EC2 웹 서버 설치
+### EC2 웹 서버 설치 (userdata.tftpl)
 ```shell
 ping 8.8.8.8
 sudo yum -y install httpd

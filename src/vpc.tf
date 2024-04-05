@@ -104,7 +104,7 @@ resource "aws_subnet" "pri_c" {
 resource "aws_route_table" "pri_a" {
   vpc_id = aws_vpc.main.id
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.gw_a.id
   }
   tags = {
@@ -116,7 +116,7 @@ resource "aws_route_table" "pri_a" {
 resource "aws_route_table" "pri_c" {
   vpc_id = aws_vpc.main.id
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.gw_a.id
   }
   tags = {
@@ -146,9 +146,9 @@ resource "aws_eip" "pub_a" {
 
 resource "aws_nat_gateway" "gw_a" {
   allocation_id = aws_eip.pub_a.id
-  subnet_id = aws_subnet.pub_a.id
+  subnet_id     = aws_subnet.pub_a.id
   tags = {
-    Name: "tf-nat-public1-ap-northeast-2a"
+    Name : "tf-nat-public1-ap-northeast-2a"
   }
   depends_on = [aws_internet_gateway.gw] # 적절한 순서를 보장하려면 VPC에 대한 인터넷 게이트웨이에 명시적 종속성을 추가하는 것이 권장됨
 }
